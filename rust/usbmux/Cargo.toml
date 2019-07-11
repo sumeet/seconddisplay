@@ -2,6 +2,7 @@
 name = "usbmux"
 version = "0.1.0"
 authors = ["Aleksey Kuznetsov <zummenix@gmail.com>"]
+edition = "2018"
 
 description = "A client library to communicate with usbmuxd (USB multiplexer daemon)."
 repository = "https://github.com/zummenix/usbmux"

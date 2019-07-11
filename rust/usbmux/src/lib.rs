@@ -31,7 +31,7 @@ impl Stream {
     /// Tries to connect to usbmuxd.
     pub fn connect() -> Result<Self> {
         Ok(Stream {
-            inner: try!(UnixStream::connect("/var/run/usbmuxd")),
+            inner: UnixStream::connect("/var/run/usbmuxd")?,
         })
     }
 
@@ -40,7 +40,7 @@ impl Stream {
     /// If the provided value is `None`, then `send` calls will block indefinitely.
     /// It is an error to pass the zero `Duration` to this method.
     pub fn set_send_tymeout(&mut self, timeout: Option<Duration>) -> Result<()> {
-        Ok(try!(self.inner.set_write_timeout(timeout)))
+        Ok(self.inner.set_write_timeout(timeout)?)
     }
 
     /// Sets the receive timeout for the stream.
@@ -48,7 +48,7 @@ impl Stream {
     /// If the provided value is `None`, then `receive` calls will block indefinitely.
     /// It is an error to pass the zero `Duration` to this method.
     pub fn set_receive_timeout(&mut self, timeout: Option<Duration>) -> Result<()> {
-        Ok(try!(self.inner.set_read_timeout(timeout)))
+        Ok(self.inner.set_read_timeout(timeout)?)
     }
 
     /// Tries to send a `plist` message to usbmuxd.
@@ -67,8 +67,8 @@ impl Stream {
 
     /// Sends a request and receives a response.
     pub fn request(&mut self, message: Plist) -> Result<Plist> {
-        try!(self.send(message));
-        Ok(try!(self.receive()))
+        self.send(message)?;
+        Ok(self.receive()?)
     }
 }
 
@@ -143,7 +143,7 @@ pub fn message_type(mtype: &str) -> BTreeMap<String, Plist> {
 
 fn send<W>(stream: &mut W, plist: Plist) -> Result<()> where W: io::Write {
     let data = prepare_request_data(&plist_to_data(plist));
-    Ok(try!(stream.write_all(&data)))
+    Ok(stream.write_all(&data)?)
 }
 
 fn receive<R>(stream: &mut R) -> Result<Plist> where R: io::Read {
@@ -153,13 +153,13 @@ fn receive<R>(stream: &mut R) -> Result<Plist> where R: io::Read {
     // Don't bother to check version and message type. Deserialization
     // from plist will fail anyway if message will have wrong format.
     let mut header = [0; 16];
-    try!(stream.read_exact(&mut header));
+    stream.read_exact(&mut header)?;
     let length = LittleEndian::read_u32(&header) as usize - header.len();
 
     let mut data = vec![0; length];
-    try!(stream.read_exact(&mut data));
+    stream.read_exact(&mut data)?;
 
-    Ok(try!(Plist::read(io::Cursor::new(data))))
+    Ok(Plist::read(io::Cursor::new(data))?)
 }
 
 /// Converts the `plist` to the raw xml data.

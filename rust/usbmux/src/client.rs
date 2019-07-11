@@ -1,10 +1,10 @@
 use std::time::Duration;
 use plist::Plist;
 
-use Stream;
-use Result;
-use Error;
-use message_type;
+use crate::Stream;
+use crate::Result;
+use crate::Error;
+use crate::message_type;
 
 /// A Client for usbmuxd.
 pub struct Client {
@@ -14,9 +14,9 @@ pub struct Client {
 impl Client {
     /// Tries to create a new instance of the `Client`.
     pub fn new() -> Result<Self> {
-        let mut stream = try!(Stream::connect());
-        try!(stream.set_send_tymeout(Some(Duration::new(1, 0))));
-        try!(stream.set_receive_timeout(Some(Duration::new(1, 0))));
+        let mut stream = Stream::connect()?;
+        stream.set_send_tymeout(Some(Duration::new(1, 0)))?;
+        stream.set_receive_timeout(Some(Duration::new(1, 0)))?;
         Ok(Client {
             stream: stream,
         })
@@ -24,8 +24,8 @@ impl Client {
 
     /// Returns a list of connected devices.
     pub fn devices(&mut self) -> Result<Vec<Device>> {
-        let mut plist = try!(self.stream.request(Plist::Dictionary(message_type("ListDevices"))));
-        let dict = try!(plist.as_dictionary_mut().ok_or(Error::UnexpectedFormat));
+        let mut plist = self.stream.request(Plist::Dictionary(message_type("ListDevices")))?;
+        let dict = plist.as_dictionary_mut().ok_or(Error::UnexpectedFormat)?;
         match dict.remove("DeviceList") {
             Some(Plist::Array(array)) => {
                 let results = array.into_iter().filter_map(|mut item| {
@@ -50,7 +50,7 @@ impl Client {
         let mut message = message_type("Connect");
         message.insert("DeviceID".to_owned(), Plist::Integer(device_id as i64));
         message.insert("PortNumber".to_owned(), Plist::Integer(byte_swap(port) as i64));
-        let plist = try!(self.stream.request(Plist::Dictionary(message)));
+        let plist = self.stream.request(Plist::Dictionary(message))?;
         match plist.as_dictionary() {
             Some(dict) => {
                 match dict.get("Number") {
