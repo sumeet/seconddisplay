@@ -33,26 +33,26 @@ import threading
 import struct
 
 class PeerTalkThread(threading.Thread):
-	def __init__(self,*args):
-		self._psock = args[0]
-		self._running = True
-		threading.Thread.__init__(self)
+    def __init__(self,*args):
+        self._psock = args[0]
+        self._running = True
+        threading.Thread.__init__(self)
 
-	def run(self):
-		framestructure = struct.Struct("! I I I I")
-		while self._running:
-			try:
-				msg = self._psock.recv(16)
-				if len(msg) > 0:
-					frame = framestructure.unpack(msg)
-					size = frame[3]
-					msgdata = self._psock.recv(size)
-					print "Received: %s" % msgdata
-			except:
-				pass
+    def run(self):
+        framestructure = struct.Struct("! I I I I")
+        while self._running:
+            try:
+                msg = self._psock.recv(16)
+                if len(msg) > 0:
+                    frame = framestructure.unpack(msg)
+                    size = frame[3]
+                    msgdata = self._psock.recv(size)
+                    print "Received: %s" % msgdata
+            except:
+                pass
 
-	def stop(self):
-		self._running = False
+    def stop(self):
+        self._running = False
 
 print "peertalk starting"
 mux = usbmux.USBMux()
@@ -76,20 +76,27 @@ print "type quit to exit!"
 
 done = False
 while not done:
-	cmd = raw_input("message: ")
-	if cmd == "quit":
-		done = True
-	else:
-		r8 = cmd.encode('utf-8')
-		headervalues = (1,101,0,len(r8)+4)
-		framestructure = struct.Struct("! I I I I")
-		packed_data = framestructure.pack(*headervalues)
-		psock.send(packed_data)
-		messagevalues = (len(r8),r8)
-		fmtstring = "! I {0}s".format(len(r8))
-		sm = struct.Struct(fmtstring)
-		packed_message = sm.pack(*messagevalues)
-		psock.send(packed_message)
+    cmd = raw_input("message: ")
+    if cmd == "quit":
+        done = True
+    else:
+        # send the header
+        r8 = cmd.encode('utf-8')
+        headervalues = (1,101,0,len(r8)+4)
+        framestructure = struct.Struct("! I I I I")
+        packed_data = framestructure.pack(*headervalues)
+
+        print 'header: %r' % (packed_data,)
+        psock.send(packed_data)
+
+        # send the payload
+        messagevalues = (len(r8),r8)
+        fmtstring = "! I {0}s".format(len(r8))
+        sm = struct.Struct(fmtstring)
+        packed_message = sm.pack(*messagevalues)
+
+        print 'payload: %r' % (packed_message,)
+        psock.send(packed_message)
 
 ptthread.stop()
 ptthread.join()

@@ -58,6 +58,11 @@ impl Stream {
         send(&mut self.inner, plist)
     }
 
+    pub fn send_raw(&mut self, mut buf: Vec<u8>) -> Result<()> {
+        use io::Write;
+        Ok(self.inner.write_all(&mut buf)?)
+    }
+
     /// Tries to receive a message from usbmuxd.
     ///
     /// Typically this method should be called after `send` method.
@@ -184,6 +189,19 @@ fn prepare_request_data(data: &[u8]) -> Vec<u8> {
     cursor.write_u32::<LittleEndian>(data.len() as u32 + 16).unwrap(); // total length
     cursor.write_u32::<LittleEndian>(1).unwrap(); // version
     cursor.write_u32::<LittleEndian>(8).unwrap(); // message type (plist)
+    cursor.write_u32::<LittleEndian>(1).unwrap(); // tag
+    cursor.write_all(data).unwrap();
+    cursor.into_inner()
+}
+
+fn prepare_request_data_copy_python(data: &[u8]) -> Vec<u8> {
+    use byteorder::{WriteBytesExt, LittleEndian};
+    use std::io::{Write, Cursor};
+
+    let mut cursor = Cursor::new(Vec::new());
+    cursor.write_u32::<LittleEndian>(data.len() as u32 + 16).unwrap(); // total length
+    cursor.write_u32::<LittleEndian>(1).unwrap(); // version
+    cursor.write_u32::<LittleEndian>(101).unwrap(); // message type (thing we copied from python)
     cursor.write_u32::<LittleEndian>(1).unwrap(); // tag
     cursor.write_all(data).unwrap();
     cursor.into_inner()
