@@ -1,0 +1,12 @@
+peertalk:
+- ios + macos library: https://github.com/rsms/peertalk
+- someone who was talking about making this very project, asking about cross-platform support:
+  https://github.com/rsms/peertalk/issues/35
+
+peertalk from python:
+- blog post: https://makezine.com/2013/04/22/peertalk-beaglebone-and-raspberry-pi/
+- example python code: https://github.com/davidahouse/peertalk-python/blob/master/peertalk.py
+- port in go: https://github.com/mitchr/mux
+
+rust usbmux crate (i think the rust version of the above code):
+- https://github.com/zummenix/usbmux/

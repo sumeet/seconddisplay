@@ -1,0 +1,4 @@
+1. **See if we can talk to the iPad (using [peertalk](https://github.com/rsms/peertalk/)) from Rust**
+2. Grab the X11 screen buffer from Rust and transfer it over the Peertalk socket
+3. Hack up the Peer example iOS app to display the X11 screen buffer as it comes in
+4. Optimization? Maybe video encoding and using UDP instead of TCP
