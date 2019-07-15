@@ -1,22 +1,22 @@
 //! This crate allows to communicate with usbmuxd (USB multiplexer daemon) which is used to
 //! communicate with iOS devices.
 
-extern crate unix_socket;
 extern crate byteorder;
 extern crate plist;
+extern crate unix_socket;
 #[cfg(test)]
 #[macro_use(expect)]
 extern crate expectest;
 #[macro_use(try_opt)]
 extern crate try_opt;
 
-use std::io;
-use std::fmt;
-use std::error;
-use std::time::Duration;
-use std::collections::BTreeMap;
-use unix_socket::UnixStream;
 use plist::Plist;
+use std::collections::BTreeMap;
+use std::error;
+use std::fmt;
+use std::io;
+use std::time::Duration;
+use unix_socket::UnixStream;
 
 mod client;
 pub use client::Client;
@@ -146,13 +146,19 @@ pub fn message_type(mtype: &str) -> BTreeMap<String, Plist> {
     map
 }
 
-fn send<W>(stream: &mut W, plist: Plist) -> Result<()> where W: io::Write {
+fn send<W>(stream: &mut W, plist: Plist) -> Result<()>
+where
+    W: io::Write,
+{
     let data = prepare_request_data(&plist_to_data(plist));
     Ok(stream.write_all(&data)?)
 }
 
-fn receive<R>(stream: &mut R) -> Result<Plist> where R: io::Read {
-    use byteorder::{LittleEndian, ByteOrder};
+fn receive<R>(stream: &mut R) -> Result<Plist>
+where
+    R: io::Read,
+{
+    use byteorder::{ByteOrder, LittleEndian};
 
     // Read header and get length of the data.
     // Don't bother to check version and message type. Deserialization
@@ -182,11 +188,13 @@ fn plist_to_data(plist: Plist) -> Vec<u8> {
 
 /// Prepares request data for usbmuxd by adding a header info.
 fn prepare_request_data(data: &[u8]) -> Vec<u8> {
-    use byteorder::{WriteBytesExt, LittleEndian};
-    use std::io::{Write, Cursor};
+    use byteorder::{LittleEndian, WriteBytesExt};
+    use std::io::{Cursor, Write};
 
     let mut cursor = Cursor::new(Vec::new());
-    cursor.write_u32::<LittleEndian>(data.len() as u32 + 16).unwrap(); // total length
+    cursor
+        .write_u32::<LittleEndian>(data.len() as u32 + 16)
+        .unwrap(); // total length
     cursor.write_u32::<LittleEndian>(1).unwrap(); // version
     cursor.write_u32::<LittleEndian>(8).unwrap(); // message type (plist)
     cursor.write_u32::<LittleEndian>(1).unwrap(); // tag
@@ -194,12 +202,14 @@ fn prepare_request_data(data: &[u8]) -> Vec<u8> {
     cursor.into_inner()
 }
 
-fn prepare_request_data_copy_python(data: &[u8]) -> Vec<u8> {
-    use byteorder::{WriteBytesExt, LittleEndian};
-    use std::io::{Write, Cursor};
+fn _prepare_request_data_copy_python(data: &[u8]) -> Vec<u8> {
+    use byteorder::{LittleEndian, WriteBytesExt};
+    use std::io::{Cursor, Write};
 
     let mut cursor = Cursor::new(Vec::new());
-    cursor.write_u32::<LittleEndian>(data.len() as u32 + 16).unwrap(); // total length
+    cursor
+        .write_u32::<LittleEndian>(data.len() as u32 + 16)
+        .unwrap(); // total length
     cursor.write_u32::<LittleEndian>(1).unwrap(); // version
     cursor.write_u32::<LittleEndian>(101).unwrap(); // message type (thing we copied from python)
     cursor.write_u32::<LittleEndian>(1).unwrap(); // tag
@@ -209,10 +219,10 @@ fn prepare_request_data_copy_python(data: &[u8]) -> Vec<u8> {
 
 #[cfg(test)]
 mod tests {
-    use super::{prepare_request_data, message_type};
-    use std::io;
+    use super::{message_type, prepare_request_data};
     use expectest::prelude::*;
     use plist::Plist;
+    use std::io;
 
     #[test]
     fn test_prepare_data() {
