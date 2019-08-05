@@ -10,3 +10,6 @@ peertalk from python:
 
 rust usbmux crate (i think the rust version of the above code):
 - https://github.com/zummenix/usbmux/
+
+show pixels on screen ios:
+- https://github.com/eldade/EEPixelViewer/
