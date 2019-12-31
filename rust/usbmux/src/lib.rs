@@ -24,7 +24,7 @@ pub use client::Device;
 
 /// Represents connection to usbmuxd.
 pub struct Stream {
-    inner: UnixStream,
+    pub inner: UnixStream,
 }
 
 impl Stream {

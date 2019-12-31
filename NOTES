@@ -13,3 +13,5 @@ rust usbmux crate (i think the rust version of the above code):
 
 show pixels on screen ios:
 - https://github.com/eldade/EEPixelViewer/
+
+- x windows screencap is in BGRX format: https://github.com/image-rs/image/issues/580
